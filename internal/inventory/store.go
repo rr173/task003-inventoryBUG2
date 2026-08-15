@@ -143,7 +143,11 @@ func (s *Store) StockIn(sku string, in AmountInput, now time.Time) (*Product, er
 	if p.DiscontinuedAt != nil {
 		return nil, ErrDiscontinued
 	}
-	p.Stock += in.Amount
+	newStock := p.Stock + in.Amount
+	if newStock < p.Stock {
+		return nil, ErrInvalidAmount
+	}
+	p.Stock = newStock
 	p.LastInAt = &now
 	p.UpdatedAt = now
 	return p.view(), nil
